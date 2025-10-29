@@ -50,15 +50,20 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    restart: always
     volumes:
-      - model-cache:/cache
+      - /volume1/docker/appdata/immich/cache:/cache
     env_file:
       - .env
-    restart: always
-    cpu_shares: 256     # низкий приоритет по CPU
-    mem_limit: 1g       # ограничение RAM до 1 ГБ
+    environment:
+      - MACHINE_LEARNING_CACHE_FOLDER=/cache
+    cpu_shares: 256        # низкий приоритет по CPU
+    mem_limit: 1g          # ограничение RAM до 1 ГБ
     healthcheck:
-      disable: false
+      test: ["CMD", "curl", "-f", "http://localhost:3003/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     container_name: immich_redis
